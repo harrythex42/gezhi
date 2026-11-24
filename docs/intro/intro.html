@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>格致 Gezhi 项目介绍</title>
+<style>
+  body{font-family:"PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif;color:#1f2933;font-size:10.5pt;line-height:1.65;margin:0}
+  .wrap{padding:0 4mm}
+  h1{font-size:24pt;margin:0 0 2mm;color:#0b3d5c;letter-spacing:1px}
+  .sub{color:#52606d;font-size:11.5pt;margin-bottom:6mm}
+  h2{font-size:14pt;color:#0b3d5c;border-left:4px solid #e67e22;padding-left:3mm;margin:6mm 0 2.5mm}
+  h3{font-size:11.5pt;margin:4mm 0 2mm;color:#243b53}
+  p{margin:1.5mm 0}
+  .hero{background:#f0f6fa;border-radius:6px;padding:4mm 5mm;margin:3mm 0}
+  .hero b{color:#0b3d5c}
+  table{border-collapse:collapse;width:100%;margin:2mm 0 3mm;font-size:9.8pt}
+  th,td{border:1px solid #d9e2ec;padding:1.6mm 2.2mm;vertical-align:top;text-align:left}
+  th{background:#0b3d5c;color:#fff;font-weight:600}
+  tr:nth-child(even) td{background:#f8fafc}
+  .flow{display:flex;align-items:stretch;gap:2mm;margin:3mm 0}
+  .box{flex:1;border:1.5px solid #0b3d5c;border-radius:6px;padding:2.5mm;text-align:center;font-size:9.5pt;background:#fff}
+  .box b{display:block;color:#0b3d5c;font-size:10.5pt;margin-bottom:1mm}
+  .arrow{align-self:center;color:#e67e22;font-size:16pt;font-weight:700}
+  .ok{color:#1e8449;font-weight:700}.wip{color:#b9770e;font-weight:700}.todo{color:#7b8794;font-weight:700}
+  .note{background:#fff8e6;border:1px solid #f5d491;border-radius:6px;padding:3mm 4mm;margin:3mm 0;font-size:9.8pt}
+  .fig{text-align:center;margin:3mm 0}.fig img{width:100%;max-width:165mm}
+  .cap{font-size:9pt;color:#52606d}
+  .two{display:flex;gap:4mm}.two>div{flex:1}
+  ul{margin:1mm 0 1mm 5mm;padding-left:3mm}li{margin:.6mm 0}
+  .foot{margin-top:8mm;color:#7b8794;font-size:8.5pt;border-top:1px solid #d9e2ec;padding-top:2mm}
+  .pb{page-break-before:always}
+</style></head>
+<body><div class="wrap" data-unsliced-root>
+
+<h1>格致 Gezhi</h1>
+<div class="sub">用几十块钱的 ESP32 和传感器，测手机测不了的物理量 · 项目介绍（2026 年 11 月）</div>
+
+<div class="hero">
+<p><b>一句话：</b>格致是一套给物理课堂和随身实验用的低成本测量工具。一块 ESP32 小板接上各种传感器，负责"测"；电脑负责实时画曲线、存数据，课堂上可以直接投屏；AI 在实验结束后帮忙分析数据、解释误差。</p>
+<p><b>名字：</b>取自"格物致知"，意思是通过动手测量去理解物理规律。</p>
+</div>
+
+<h2>为什么要做</h2>
+<p>手机里已经有加速度计、陀螺仪、磁力计、光线传感器，phyphox 这类 App 也把它们用得很好。所以格致<b>不跟手机抢</b>，只做手机做不到或不方便做的事：</p>
+<ul>
+  <li><b>手机根本测不了的量</b>：力、电流、电压、温度，还有光电门计时。</li>
+  <li><b>不方便用手机的场景</b>：绑在小车上撞墙、测高 g 冲击、同时在好几个位置测量。手机很贵，摔不起，一台手机也只能放在一个地方。</li>
+  <li><b>便宜到可以放手给学生</b>：一套几十到一百块，坏了也不心疼，可以分组每组一套。</li>
+</ul>
+
+<h2>系统怎么工作</h2>
+<div class="flow">
+  <div class="box"><b>传感器</b>加速度 / 力 / 电流 / 温度 / 光电门</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>ESP32</b>读传感器，每行发一组数字</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>电脑</b>实时曲线 + 最新读数，可投屏</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>CSV 数据</b>每次实验自动存档</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>AI 分析</b>拟合、检查数据、解释误差</div>
+</div>
+<p>设计原则：<b>ESP32 只管测量，显示和记录交给电脑。</b>所有传感器都用同一种数据格式（第一行是列名，后面每行是数字），所以换一个传感器，电脑端不用改任何东西。</p>
+
+<h2 class="pb">现在做到了什么</h2>
+<table>
+<tr><th style="width:24%">部分</th><th style="width:13%">状态</th><th>说明</th></tr>
+<tr><td>ESP32 主板</td><td class="ok">✅ 可用</td><td>普通 ESP32（双核 240 MHz、Wi-Fi、蓝牙、4 MB 存储），USB 连接电脑。原厂程序已完整备份。</td></tr>
+<tr><td>加速度 / 角速度（MPU6050）</td><td class="ok">✅ 可用</td><td>三轴加速度 ±8 g、三轴角速度 ±500 °/s，当前每秒 20 组（芯片最高支持每秒 1000 组）。静止时噪声约 0.003 g。</td></tr>
+<tr><td>电脑端实时曲线 <code>plot.py</code></td><td class="ok">✅ 可用</td><td>实时画多条曲线，顶部显示最新读数；每次自动存 CSV；拔线会自动重连；任何传感器都通用。</td></tr>
+<tr><td>一键烧录（串口自我升级）</td><td class="ok">✅ 可用</td><td>改完程序一条命令就能更新，不用插线、不用按按钮。传错了板子会拒绝更新，继续运行旧程序，不会"变砖"。目前一次约 40 秒。</td></tr>
+<tr><td>AI 数据分析</td><td class="wip">🟡 手动可用</td><td>实验后把 CSV 交给 AI（Claude），算周期、拟合、检查数据可不可靠。还没做成一键工具，见下面的单摆例子。</td></tr>
+<tr><td>手机 phyphox 显示（蓝牙）</td><td class="wip">🟡 已写未测</td><td>程序已写好、编译通过，但还没上板验证。目前优先做电脑显示，这部分暂时搁置。</td></tr>
+<tr><td>测力计（HX711 + 5 kg 秤架）</td><td class="todo">⬜ 待到货</td><td>用砝码标定后测拉力、压力、摩擦力。默认每秒 10 次，改设置可到 80 次。</td></tr>
+<tr><td>电流 / 电压（INA226）</td><td class="todo">⬜ 待到货</td><td>测低压直流，量程约 0.8 A。适合电池放电、小电机、串并联电路。</td></tr>
+<tr><td>温度（DS18B20 防水探头 ×2）</td><td class="todo">⬜ 待到货</td><td>两点同时测，适合冷却曲线、比热容、保温对比。每次读数约 0.75 秒。</td></tr>
+<tr><td>光照（BH1750）、光电门 ×2</td><td class="todo">⬜ 待到货</td><td>光电门做自由落体、小车速度、碰撞前后速度的计时。</td></tr>
+<tr><td>板载小屏幕</td><td class="todo">⬜ 规划</td><td>随身用时直接显示读数，不接电脑也能用。</td></tr>
+</table>
+<p class="cap">配件（新 ESP32-S3 主板 + 上面全部传感器）已选好，合计约 ¥100，尚未下单。标注"待到货 / 规划"的功能还没实现，文中其余数据都是实测。</p>
+
+<h2 class="pb">实测例子：单摆</h2>
+<p>把 MPU6050 吊在杜邦线下面让它摆，录了 90 秒、共 1764 组数据。下图是其中 8 秒：</p>
+<div class="fig"><img src="__PEND_PNG__" alt="单摆实测曲线"><div class="cap">上：角速度（摆到最低点最快，到两端为零）；下：总加速度。</div></div>
+
+<div class="two">
+<div>
+<h3>测出来的</h3>
+<ul>
+<li>最稳定的一段（38 到 56 秒）：周期 <b>0.99 ± 0.02 秒</b>。</li>
+<li>按单摆公式 T = 2π√(L/g) 反推，等效摆长约 <b>24 cm</b>。</li>
+</ul>
+</div>
+<div>
+<h3>AI 检查出的问题</h3>
+<ul>
+<li><b>摆幅没有变小</b>：自由摆动本应越摆越小，这里反而略有增大，说明一直有外力在推它。所以<b>不能</b>拿这段数据算阻尼。</li>
+<li><b>有 17 个点超出量程</b>：角速度顶到了 500 °/s 的上限，摆幅太大了。</li>
+<li>前 35 秒周期是 0.62 秒，和后面对不上，应该是摆法不一样。</li>
+</ul>
+</div>
+</div>
+
+<div class="note"><b>这个例子说明了 AI 在格致里的定位：</b>算周期、做拟合，普通数学工具就能做，而且更准。但"这段数据能不能用""为什么和理论值对不上"，单纯套公式往往发现不了：公式照样会算出一个看起来很正常的 g。<b>先检查数据，再解释结果</b>，这才是 AI 真正能帮上忙的地方。下一步是按规范重做一次（ESP32 固定牢、小角度、只松手一次），完整算出 g 和衰减。</div>
+
+<h2 class="pb">和 phyphox 比一比</h2>
+<p>phyphox 是德国亚琛工业大学开发的免费手机 App，把手机变成物理实验室，很成熟，全世界的物理课都在用。格致不是要替代它，而是补上它够不着的地方。</p>
+<table>
+<tr><th style="width:18%">对比项</th><th style="width:41%">phyphox</th><th>格致 Gezhi</th></tr>
+<tr><td>测什么</td><td>手机自带的传感器：加速度、陀螺仪、磁场、光、气压、声音、GPS 等</td><td>外接传感器：<b>力、电流、电压、温度、光电门</b>，加上加速度和角速度</td></tr>
+<tr><td>需要的设备</td><td>一部手机（大多数人都有）</td><td>ESP32 + 传感器（几十到一百元）+ 一台电脑</td></tr>
+<tr><td>上手难度</td><td><b>装上就能用</b>，实验模板很多</td><td>要接线；部分模块要焊接；现在还靠命令行启动</td></tr>
+<tr><td>能不能"豁出去用"</td><td>手机贵，不适合绑在小车上撞、摔、泡水</td><td><b>便宜、小</b>，可以绑在小车上、放进水里（防水温度探头）</td></tr>
+<tr><td>多点同时测</td><td>一部手机只在一个位置</td><td>一块板可以接好几个传感器，比如两个温度探头、两个光电门</td></tr>
+<tr><td>冲击 / 高 g</td><td>受手机传感器量程限制（不同手机不一样）</td><td>MPU6050 最大 ±16 g，可以换更高量程的芯片</td></tr>
+<tr><td>显示</td><td>手机屏幕；也能在电脑浏览器上远程看</td><td>电脑大屏，方便投影；以后加板载小屏</td></tr>
+<tr><td>数据导出</td><td>支持导出 CSV / Excel</td><td>每次实验自动存 CSV</td></tr>
+<tr><td>分析</td><td>部分实验自带计算，比如周期、频谱</td><td>AI 检查数据质量、拟合并解释误差（目前手动）</td></tr>
+<tr><td>能不能改</td><td>可以自己编辑实验，但受 App 能力限制</td><td><b>软硬件全部自己掌握</b>，想加什么传感器就加什么</td></tr>
+<tr><td>成熟度</td><td><b>非常成熟</b>，多年迭代，多语言</td><td>原型阶段，目前只有加速度和角速度跑通了</td></tr>
+</table>
+
+<div class="note"><b>怎么选：</b>要测加速度、声音、磁场，<b>直接用 phyphox</b>，免费又方便。要测力、电流、温度，或者要绑在小车上、多点同时测，就用<b>格致</b>。两者也能连起来：phyphox 本身支持接收外部蓝牙设备的数据，格致已经写好了这部分程序（待验证），以后格致的传感器数据也能显示在手机的 phyphox 里。</div>
+
+<h2>接下来</h2>
+<ol>
+<li><b>重做单摆实验</b>，按规范录一次干净的数据，完整算出 g 和衰减，检验 AI 分析值不值得做成正式功能。</li>
+<li><b>测力计</b>：配件到货后用砝码标定，做胡克定律、摩擦力、碰撞冲量的实验。</li>
+<li><b>电流、温度、光电门</b>：依次接入，同一个电脑程序就能显示。</li>
+<li><b>做成"一键出报告"</b>：如果 AI 分析确实有用，就把它做成实验结束后自动生成分析报告。</li>
+<li><b>板载小屏</b>，不接电脑也能随身测。</li>
+</ol>
+
+</div></body></html>

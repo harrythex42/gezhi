@@ -1,0 +1,6 @@
+#!/bin/zsh
+# arduino-cli with project-local data dirs. Usage: tools/acli compile ...
+DIR="${0:A:h}"
+export ARDUINO_DIRECTORIES_DATA="$DIR/arduino-data"
+export ARDUINO_DIRECTORIES_USER="$DIR/arduino-user"
+exec "$DIR/arduino-cli" "$@"

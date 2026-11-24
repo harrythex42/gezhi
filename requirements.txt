@@ -1,0 +1,10 @@
+aiohttp>=3.9
+av>=12            # bundles libopus/mp3, no Homebrew needed
+numpy
+matplotlib
+pyserial
+openai>=1.40      # any OpenAI-compatible LLM API
+dashscope==1.27.8 # Alibaba Bailian ASR / CosyVoice (1.x API)
+edge-tts>=7
+python-dotenv
+sounddevice       # simulator only: Mac mic / speaker

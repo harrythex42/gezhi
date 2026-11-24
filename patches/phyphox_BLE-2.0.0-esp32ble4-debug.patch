@@ -1,0 +1,40 @@
+--- a/src/transport/Esp32Ble4Transport.cpp
++++ b/src/transport/Esp32Ble4Transport.cpp
+@@ -160,11 +160,13 @@
+ 
+ bool Esp32Ble4Transport::begin(const GattLayout& layout, TransportListener& li) {
+     listener = &li;
++    Serial.println("[phyphoxBLE] BLE.begin");
+     if (!BLE.begin(layout.deviceName)) return false;
+ #if BLE_BLUEDROID
+     BLE.setCustomGattsHandler(gattsHook);
+ #endif
+     if (requestedMtu) BLE.setMTU(requestedMtu + 3);
++    Serial.println("[phyphoxBLE] BLE.createServer");
+     server = BLE.createServer();
+     if (!server) return false;
+     server.advertiseOnDisconnect(false);          // the core restarts advertising itself
+@@ -221,18 +223,20 @@
+         chars[CH_LEGACY_CONFIG] = make(data, 0x10, 0x03, CharId{CH_LEGACY_CONFIG, 0}, false);
+ 
+     // 4.x commits the whole GATT database here (handle counts are computed by the library)
++    Serial.println("[phyphoxBLE] server.start");
+     if (!server.start()) return false;
+ #if BLE_BLUEDROID
+     experimentHandle = chars[CH_EXPERIMENT].getHandle();   // valid once the server has started
+ #endif
+ 
++    Serial.println("[phyphoxBLE] configure advertising");
+     BLEAdvertising adv = BLE.getAdvertising();
+     adv.addServiceUUID(expUuid);
+     adv.setScanResponse(true);                    // the name goes into the scan response
+-    BLE.startAdvertising();
++    Serial.println("[phyphoxBLE] BLE.startAdvertising");
++    if (!BLE.startAdvertising()) return false;
+ 
+-    xTaskCreate(pumpTask, "phyphoxBLE", 4096, nullptr, 1, nullptr);
+-    return true;
++    return xTaskCreate(pumpTask, "phyphoxBLE", 4096, nullptr, 1, nullptr) == pdPASS;
+ }
+ 
+ static BLECharacteristic* lookup(CharId id) {
